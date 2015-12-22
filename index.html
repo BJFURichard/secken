@@ -1,0 +1,64 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
+
+<p id="qrcode" style="text-align: center;"></p>
+
+<script type="text/javascript" src="./js/jquery-2.1.4.min.js"></script>
+<script type="text/javascript">
+    var event_id = '';
+    function change_ac(){
+        var ac = 'qrcode_for_auth';
+        var auth_type = 1;
+
+        $.get('controller/ac.php',{'ac':ac,'auth_type':auth_type}, function(resp){
+            var r = eval(resp);
+            if(r.status == 200){
+                var h = '';
+                    h += '<img src="'+r.qrcode_url+'" with="300px" height="300px"/>';
+                    h += '<p id="tip">请使用洋葱APP扫一扫</p>'
+                    $('#qrcode').html(h);
+
+                    event_id = r.event_id;
+                    //开始调取获取事件结果接口
+                    get_event_result();
+            }else{
+                alert(r.description);
+            }
+        },'json');
+    }
+
+    function get_event_result(){
+        $.get('controller/ac.php',{'ac':'event_result', 'event_id':event_id},function(resp){
+            var r = eval(resp);
+            console.log(r);
+
+            $('#tip').html(r.description);
+            if(r.status == 200){
+                //开始绑定
+                console.log("ok");
+                console.log(r);
+                location.href="/yanhao";
+                return;
+            }
+
+            setTimeout('get_event_result()', 3000);
+
+        },'json')
+    }
+
+    function bind_user(yangcong_uid){
+        $.post('controller/check_bind.php', {'yangcong_uid':yangcong_uid}, function(resp){
+            if(resp == 1){
+                location.href = './myspace.html';
+            }else{
+                location.href = './bind.html';
+            }
+        });
+    }
+</script>
+<script type="text/javascript">change_ac();</script>
+</body>
+</html>
